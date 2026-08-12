@@ -55,4 +55,10 @@ public class Post extends BaseEntity {
     public void increaseGood() {
         this.good++;
     }
+
+    public void decreaseGood() {
+        if (this.good > 0) {
+            this.good--;
+        }
+    }
 }

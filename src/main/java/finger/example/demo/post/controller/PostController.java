@@ -44,7 +44,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/good")
-    public void good(@PathVariable Long postId) {
-        postService.good(postId);
+    public void good(@PathVariable Long postId, @RequestParam Long memberId) {
+        postService.good(postId, memberId);
     }
 }

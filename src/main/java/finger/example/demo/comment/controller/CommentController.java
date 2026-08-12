@@ -32,7 +32,7 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentId}/good")
-    public void good(@PathVariable Long commentId) {
-        commentService.good(commentId);
+    public void good(@PathVariable Long commentId, @RequestParam Long memberId) {
+        commentService.good(commentId, memberId);
     }
 }

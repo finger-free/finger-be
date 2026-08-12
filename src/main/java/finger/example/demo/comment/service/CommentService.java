@@ -1,7 +1,9 @@
 package finger.example.demo.comment.service;
 
 import finger.example.demo.comment.domain.Comment;
+import finger.example.demo.comment.domain.CommentGood;
 import finger.example.demo.comment.domain.dto.request.CommentCreateRequest;
+import finger.example.demo.comment.repository.CommentGoodJpaRepository;
 import finger.example.demo.comment.repository.CommentJpaRepository;
 import finger.example.demo.member.domain.Member;
 import finger.example.demo.member.repository.MemberJpaRepository;
@@ -19,6 +21,7 @@ import java.util.List;
 public class CommentService {
 
     private final CommentJpaRepository commentJpaRepository;
+    private final CommentGoodJpaRepository commentGoodJpaRepository;
     private final MemberJpaRepository memberJpaRepository;
     private final PostJpaRepository postJpaRepository;
 
@@ -42,12 +45,30 @@ public class CommentService {
     }
 
     @Transactional
-    public void good(Long commentId) {
-        findComment(commentId).increaseGood();
+    public void good(Long commentId, Long memberId) {
+        Comment comment = findComment(commentId);
+        Member member = findMember(memberId);
+
+        commentGoodJpaRepository.findByMemberIdAndCommentId(memberId, commentId)
+                .ifPresentOrElse(
+                        commentGood -> {
+                            commentGoodJpaRepository.delete(commentGood);
+                            comment.decreaseGood();
+                        },
+                        () -> {
+                            commentGoodJpaRepository.save(CommentGood.create(member, comment));
+                            comment.increaseGood();
+                        }
+                );
     }
 
     private Comment findComment(Long commentId) {
         return commentJpaRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("comment not found"));
+    }
+
+    private Member findMember(Long memberId) {
+        return memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("member not found"));
     }
 }
