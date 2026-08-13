@@ -1,7 +1,6 @@
 package finger.example.demo.post.service;
 
 import finger.example.demo.member.domain.Member;
-import finger.example.demo.member.repository.MemberJpaRepository;
 import finger.example.demo.post.domain.Post;
 import finger.example.demo.post.domain.PostGood;
 import finger.example.demo.post.domain.dto.request.PostCreateRequest;
@@ -21,7 +20,6 @@ public class PostService {
 
     private final PostJpaRepository postJpaRepository;
     private final PostGoodJpaRepository postGoodJpaRepository;
-    private final MemberJpaRepository memberJpaRepository;
 
     public List<Post> findAll() {
         return postJpaRepository.findAll();
@@ -32,29 +30,29 @@ public class PostService {
     }
 
     @Transactional
-    public Post create(PostCreateRequest request) {
-        Member member = memberJpaRepository.findById(request.memberId())
-                .orElseThrow(() -> new RuntimeException("member not found"));
-
+    public Post create(Member member, PostCreateRequest request) {
         return postJpaRepository.save(Post.create(member, request.title(), request.content()));
     }
 
     @Transactional
-    public Post update(Long postId, PostUpdateRequest request) {
+    public Post update(Member member, Long postId, PostUpdateRequest request) {
         Post post = findPost(postId);
+        validateWriter(member, post);
         post.update(request.title(), request.content());
         return post;
     }
 
     @Transactional
-    public void delete(Long postId) {
-        postJpaRepository.delete(findPost(postId));
+    public void delete(Member member, Long postId) {
+        Post post = findPost(postId);
+        validateWriter(member, post);
+        postJpaRepository.delete(post);
     }
 
     @Transactional
-    public void good(Long postId, Long memberId) {
+    public void good(Member member, Long postId) {
         Post post = findPost(postId);
-        Member member = findMember(memberId);
+        Long memberId = member.getId();
 
         postGoodJpaRepository.findByMemberIdAndPostId(memberId, postId)
                 .ifPresentOrElse(
@@ -74,8 +72,9 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("post not found"));
     }
 
-    private Member findMember(Long memberId) {
-        return memberJpaRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("member not found"));
+    private void validateWriter(Member member, Post post) {
+        if (!post.getMember().getId().equals(member.getId())) {
+            throw new RuntimeException("post writer only");
+        }
     }
 }

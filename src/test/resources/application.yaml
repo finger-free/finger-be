@@ -10,3 +10,7 @@ spring:
 google:
   oauth:
     client-id: test-google-client-id
+
+jwt:
+  secret: test-jwt-secret-must-be-at-least-32-bytes
+  access-token-expiration-time: 3600000

@@ -1,10 +1,12 @@
 package finger.example.demo.post.controller;
 
+import finger.example.demo.auth.security.CustomUserDetails;
 import finger.example.demo.post.domain.dto.request.PostCreateRequest;
 import finger.example.demo.post.domain.dto.request.PostUpdateRequest;
 import finger.example.demo.post.domain.dto.response.PostResponse;
 import finger.example.demo.post.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,22 +31,29 @@ public class PostController {
     }
 
     @PostMapping
-    public PostResponse create(@RequestBody PostCreateRequest request) {
-        return PostResponse.from(postService.create(request));
+    public PostResponse create(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody PostCreateRequest request
+    ) {
+        return PostResponse.from(postService.create(userDetails.getMember(), request));
     }
 
     @PutMapping("/{postId}")
-    public PostResponse update(@PathVariable Long postId, @RequestBody PostUpdateRequest request) {
-        return PostResponse.from(postService.update(postId, request));
+    public PostResponse update(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long postId,
+            @RequestBody PostUpdateRequest request
+    ) {
+        return PostResponse.from(postService.update(userDetails.getMember(), postId, request));
     }
 
     @DeleteMapping("/{postId}")
-    public void delete(@PathVariable Long postId) {
-        postService.delete(postId);
+    public void delete(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long postId) {
+        postService.delete(userDetails.getMember(), postId);
     }
 
     @PutMapping("/{postId}/good")
-    public void good(@PathVariable Long postId, @RequestParam Long memberId) {
-        postService.good(postId, memberId);
+    public void good(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long postId) {
+        postService.good(userDetails.getMember(), postId);
     }
 }

@@ -6,7 +6,6 @@ import finger.example.demo.comment.domain.dto.request.CommentCreateRequest;
 import finger.example.demo.comment.repository.CommentGoodJpaRepository;
 import finger.example.demo.comment.repository.CommentJpaRepository;
 import finger.example.demo.member.domain.Member;
-import finger.example.demo.member.repository.MemberJpaRepository;
 import finger.example.demo.post.domain.Post;
 import finger.example.demo.post.repository.PostJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class CommentService {
 
     private final CommentJpaRepository commentJpaRepository;
     private final CommentGoodJpaRepository commentGoodJpaRepository;
-    private final MemberJpaRepository memberJpaRepository;
     private final PostJpaRepository postJpaRepository;
 
     public List<Comment> findAllByPost(Long postId) {
@@ -30,9 +28,7 @@ public class CommentService {
     }
 
     @Transactional
-    public Comment create(CommentCreateRequest request) {
-        Member member = memberJpaRepository.findById(request.memberId())
-                .orElseThrow(() -> new RuntimeException("member not found"));
+    public Comment create(Member member, CommentCreateRequest request) {
         Post post = postJpaRepository.findById(request.postId())
                 .orElseThrow(() -> new RuntimeException("post not found"));
 
@@ -40,14 +36,16 @@ public class CommentService {
     }
 
     @Transactional
-    public void delete(Long commentId) {
-        commentJpaRepository.delete(findComment(commentId));
+    public void delete(Member member, Long commentId) {
+        Comment comment = findComment(commentId);
+        validateWriter(member, comment);
+        commentJpaRepository.delete(comment);
     }
 
     @Transactional
-    public void good(Long commentId, Long memberId) {
+    public void good(Member member, Long commentId) {
         Comment comment = findComment(commentId);
-        Member member = findMember(memberId);
+        Long memberId = member.getId();
 
         commentGoodJpaRepository.findByMemberIdAndCommentId(memberId, commentId)
                 .ifPresentOrElse(
@@ -67,8 +65,9 @@ public class CommentService {
                 .orElseThrow(() -> new RuntimeException("comment not found"));
     }
 
-    private Member findMember(Long memberId) {
-        return memberJpaRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("member not found"));
+    private void validateWriter(Member member, Comment comment) {
+        if (!comment.getMember().getId().equals(member.getId())) {
+            throw new RuntimeException("comment writer only");
+        }
     }
 }
