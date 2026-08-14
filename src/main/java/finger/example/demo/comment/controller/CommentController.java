@@ -17,9 +17,13 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/posts/{postId}/comments")
-    public List<CommentResponse> findAllByPost(@PathVariable Long postId) {
+    public List<CommentResponse> findAllByPost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long postId
+    ) {
+        Long memberId = getMemberId(userDetails);
         return commentService.findAllByPost(postId).stream()
-                .map(CommentResponse::from)
+                .map(comment -> CommentResponse.from(comment, commentService.isGoodByMember(comment.getId(), memberId)))
                 .toList();
     }
 
@@ -39,5 +43,9 @@ public class CommentController {
     @PutMapping("/comments/{commentId}/good")
     public void good(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long commentId) {
         commentService.good(userDetails.getMember(), commentId);
+    }
+
+    private Long getMemberId(CustomUserDetails userDetails) {
+        return userDetails == null ? null : userDetails.getMember().getId();
     }
 }

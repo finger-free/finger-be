@@ -19,15 +19,22 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
-    public List<PostResponse> findAll() {
+    public List<PostResponse> findAll(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long memberId = getMemberId(userDetails);
         return postService.findAll().stream()
-                .map(PostResponse::from)
+                .map(post -> PostResponse.from(post, postService.isGoodByMember(post.getId(), memberId)))
                 .toList();
     }
 
     @GetMapping("/{postId}")
-    public PostResponse findOne(@PathVariable Long postId) {
-        return PostResponse.from(postService.findOne(postId));
+    public PostResponse findOne(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long postId
+    ) {
+        return PostResponse.from(
+                postService.findOne(postId),
+                postService.isGoodByMember(postId, getMemberId(userDetails))
+        );
     }
 
     @PostMapping
@@ -55,5 +62,9 @@ public class PostController {
     @PutMapping("/{postId}/good")
     public void good(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long postId) {
         postService.good(userDetails.getMember(), postId);
+    }
+
+    private Long getMemberId(CustomUserDetails userDetails) {
+        return userDetails == null ? null : userDetails.getMember().getId();
     }
 }

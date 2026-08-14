@@ -72,6 +72,10 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("post not found"));
     }
 
+    public boolean isGoodByMember(Long postId, Long memberId) {
+        return memberId != null && postGoodJpaRepository.existsByMemberIdAndPostId(memberId, postId);
+    }
+
     private void validateWriter(Member member, Post post) {
         if (!post.getMember().getId().equals(member.getId())) {
             throw new RuntimeException("post writer only");

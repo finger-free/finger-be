@@ -10,17 +10,23 @@ public record PostResponse(
         String title,
         String content,
         int good,
+        boolean liked,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
 
     public static PostResponse from(Post post) {
+        return from(post, false);
+    }
+
+    public static PostResponse from(Post post, boolean liked) {
         return new PostResponse(
                 post.getId(),
                 post.getMember().getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getGood(),
+                liked,
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

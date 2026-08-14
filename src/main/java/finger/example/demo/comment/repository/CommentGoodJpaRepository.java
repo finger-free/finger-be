@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface CommentGoodJpaRepository extends JpaRepository<CommentGood, Long> {
 
     Optional<CommentGood> findByMemberIdAndCommentId(Long memberId, Long commentId);
+
+    boolean existsByMemberIdAndCommentId(Long memberId, Long commentId);
 }

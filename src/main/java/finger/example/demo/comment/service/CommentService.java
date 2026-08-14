@@ -65,6 +65,10 @@ public class CommentService {
                 .orElseThrow(() -> new RuntimeException("comment not found"));
     }
 
+    public boolean isGoodByMember(Long commentId, Long memberId) {
+        return memberId != null && commentGoodJpaRepository.existsByMemberIdAndCommentId(memberId, commentId);
+    }
+
     private void validateWriter(Member member, Comment comment) {
         if (!comment.getMember().getId().equals(member.getId())) {
             throw new RuntimeException("comment writer only");

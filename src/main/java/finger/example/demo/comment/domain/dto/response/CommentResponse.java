@@ -10,16 +10,22 @@ public record CommentResponse(
         Long postId,
         String content,
         int good,
+        boolean liked,
         LocalDateTime createdAt
 ) {
 
     public static CommentResponse from(Comment comment) {
+        return from(comment, false);
+    }
+
+    public static CommentResponse from(Comment comment, boolean liked) {
         return new CommentResponse(
                 comment.getId(),
                 comment.getMember().getId(),
                 comment.getPost().getId(),
                 comment.getContent(),
                 comment.getGood(),
+                liked,
                 comment.getCreatedAt()
         );
     }
