@@ -10,4 +10,6 @@ public interface PostGoodJpaRepository extends JpaRepository<PostGood, Long> {
     Optional<PostGood> findByMemberIdAndPostId(Long memberId, Long postId);
 
     boolean existsByMemberIdAndPostId(Long memberId, Long postId);
+
+    void deleteAllByPostId(Long postId);
 }

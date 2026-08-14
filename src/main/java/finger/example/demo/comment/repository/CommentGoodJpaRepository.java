@@ -10,4 +10,8 @@ public interface CommentGoodJpaRepository extends JpaRepository<CommentGood, Lon
     Optional<CommentGood> findByMemberIdAndCommentId(Long memberId, Long commentId);
 
     boolean existsByMemberIdAndCommentId(Long memberId, Long commentId);
+
+    void deleteAllByCommentId(Long commentId);
+
+    void deleteAllByCommentPostId(Long postId);
 }

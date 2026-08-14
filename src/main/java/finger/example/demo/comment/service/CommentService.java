@@ -39,6 +39,7 @@ public class CommentService {
     public void delete(Member member, Long commentId) {
         Comment comment = findComment(commentId);
         validateWriter(member, comment);
+        commentGoodJpaRepository.deleteAllByCommentId(commentId);
         commentJpaRepository.delete(comment);
     }
 

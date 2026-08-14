@@ -1,6 +1,8 @@
 package finger.example.demo.post.service;
 
 import finger.example.demo.member.domain.Member;
+import finger.example.demo.comment.repository.CommentGoodJpaRepository;
+import finger.example.demo.comment.repository.CommentJpaRepository;
 import finger.example.demo.post.domain.Post;
 import finger.example.demo.post.domain.PostGood;
 import finger.example.demo.post.domain.dto.request.PostCreateRequest;
@@ -20,6 +22,8 @@ public class PostService {
 
     private final PostJpaRepository postJpaRepository;
     private final PostGoodJpaRepository postGoodJpaRepository;
+    private final CommentJpaRepository commentJpaRepository;
+    private final CommentGoodJpaRepository commentGoodJpaRepository;
 
     public List<Post> findAll() {
         return postJpaRepository.findAll();
@@ -46,6 +50,9 @@ public class PostService {
     public void delete(Member member, Long postId) {
         Post post = findPost(postId);
         validateWriter(member, post);
+        commentGoodJpaRepository.deleteAllByCommentPostId(postId);
+        commentJpaRepository.deleteAllByPostId(postId);
+        postGoodJpaRepository.deleteAllByPostId(postId);
         postJpaRepository.delete(post);
     }
 
