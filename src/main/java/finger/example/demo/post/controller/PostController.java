@@ -20,10 +20,7 @@ public class PostController {
 
     @GetMapping
     public List<PostResponse> findAll(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long memberId = getMemberId(userDetails);
-        return postService.findAll().stream()
-                .map(post -> PostResponse.from(post, postService.isGoodByMember(post.getId(), memberId)))
-                .toList();
+        return postService.findAll(getMemberId(userDetails));
     }
 
     @GetMapping("/{postId}")
@@ -31,10 +28,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId
     ) {
-        return PostResponse.from(
-                postService.findOne(postId),
-                postService.isGoodByMember(postId, getMemberId(userDetails))
-        );
+        return postService.findOne(postId, getMemberId(userDetails));
     }
 
     @PostMapping
@@ -42,7 +36,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody PostCreateRequest request
     ) {
-        return PostResponse.from(postService.create(userDetails.getMember(), request));
+        return postService.create(userDetails.getMember(), request);
     }
 
     @PutMapping("/{postId}")
@@ -51,7 +45,7 @@ public class PostController {
             @PathVariable Long postId,
             @RequestBody PostUpdateRequest request
     ) {
-        return PostResponse.from(postService.update(userDetails.getMember(), postId, request));
+        return postService.update(userDetails.getMember(), postId, request);
     }
 
     @DeleteMapping("/{postId}")

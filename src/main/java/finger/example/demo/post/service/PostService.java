@@ -7,6 +7,7 @@ import finger.example.demo.post.domain.Post;
 import finger.example.demo.post.domain.PostGood;
 import finger.example.demo.post.domain.dto.request.PostCreateRequest;
 import finger.example.demo.post.domain.dto.request.PostUpdateRequest;
+import finger.example.demo.post.domain.dto.response.PostResponse;
 import finger.example.demo.post.repository.PostGoodJpaRepository;
 import finger.example.demo.post.repository.PostJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,25 +26,29 @@ public class PostService {
     private final CommentJpaRepository commentJpaRepository;
     private final CommentGoodJpaRepository commentGoodJpaRepository;
 
-    public List<Post> findAll() {
-        return postJpaRepository.findAll();
+    public List<PostResponse> findAll(Long memberId) {
+        return postJpaRepository.findAll().stream()
+                .map(post -> PostResponse.from(post, isGoodByMember(post.getId(), memberId)))
+                .toList();
     }
 
-    public Post findOne(Long postId) {
-        return findPost(postId);
+    public PostResponse findOne(Long postId, Long memberId) {
+        Post post = findPost(postId);
+        return PostResponse.from(post, isGoodByMember(postId, memberId));
     }
 
     @Transactional
-    public Post create(Member member, PostCreateRequest request) {
-        return postJpaRepository.save(Post.create(member, request.title(), request.content()));
+    public PostResponse create(Member member, PostCreateRequest request) {
+        Post post = postJpaRepository.save(Post.create(member, request.title(), request.content()));
+        return PostResponse.from(post, false);
     }
 
     @Transactional
-    public Post update(Member member, Long postId, PostUpdateRequest request) {
+    public PostResponse update(Member member, Long postId, PostUpdateRequest request) {
         Post post = findPost(postId);
         validateWriter(member, post);
         post.update(request.title(), request.content());
-        return post;
+        return PostResponse.from(post, isGoodByMember(postId, member.getId()));
     }
 
     @Transactional
@@ -79,7 +84,7 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("post not found"));
     }
 
-    public boolean isGoodByMember(Long postId, Long memberId) {
+    private boolean isGoodByMember(Long postId, Long memberId) {
         return memberId != null && postGoodJpaRepository.existsByMemberIdAndPostId(memberId, postId);
     }
 

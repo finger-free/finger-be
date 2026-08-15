@@ -21,10 +21,7 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId
     ) {
-        Long memberId = getMemberId(userDetails);
-        return commentService.findAllByPost(postId).stream()
-                .map(comment -> CommentResponse.from(comment, commentService.isGoodByMember(comment.getId(), memberId)))
-                .toList();
+        return commentService.findAllByPost(postId, getMemberId(userDetails));
     }
 
     @PostMapping("/comments")
@@ -32,7 +29,7 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody CommentCreateRequest request
     ) {
-        return CommentResponse.from(commentService.create(userDetails.getMember(), request));
+        return commentService.create(userDetails.getMember(), request);
     }
 
     @DeleteMapping("/comments/{commentId}")

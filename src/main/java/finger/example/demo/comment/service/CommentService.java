@@ -3,6 +3,7 @@ package finger.example.demo.comment.service;
 import finger.example.demo.comment.domain.Comment;
 import finger.example.demo.comment.domain.CommentGood;
 import finger.example.demo.comment.domain.dto.request.CommentCreateRequest;
+import finger.example.demo.comment.domain.dto.response.CommentResponse;
 import finger.example.demo.comment.repository.CommentGoodJpaRepository;
 import finger.example.demo.comment.repository.CommentJpaRepository;
 import finger.example.demo.member.domain.Member;
@@ -23,16 +24,19 @@ public class CommentService {
     private final CommentGoodJpaRepository commentGoodJpaRepository;
     private final PostJpaRepository postJpaRepository;
 
-    public List<Comment> findAllByPost(Long postId) {
-        return commentJpaRepository.findAllByPostId(postId);
+    public List<CommentResponse> findAllByPost(Long postId, Long memberId) {
+        return commentJpaRepository.findAllByPostId(postId).stream()
+                .map(comment -> CommentResponse.from(comment, isGoodByMember(comment.getId(), memberId)))
+                .toList();
     }
 
     @Transactional
-    public Comment create(Member member, CommentCreateRequest request) {
+    public CommentResponse create(Member member, CommentCreateRequest request) {
         Post post = postJpaRepository.findById(request.postId())
                 .orElseThrow(() -> new RuntimeException("post not found"));
 
-        return commentJpaRepository.save(Comment.create(member, post, request.content()));
+        Comment comment = commentJpaRepository.save(Comment.create(member, post, request.content()));
+        return CommentResponse.from(comment, false);
     }
 
     @Transactional
@@ -66,7 +70,7 @@ public class CommentService {
                 .orElseThrow(() -> new RuntimeException("comment not found"));
     }
 
-    public boolean isGoodByMember(Long commentId, Long memberId) {
+    private boolean isGoodByMember(Long commentId, Long memberId) {
         return memberId != null && commentGoodJpaRepository.existsByMemberIdAndCommentId(memberId, commentId);
     }
 

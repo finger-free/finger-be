@@ -14,11 +14,6 @@ public record PostResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-
-    public static PostResponse from(Post post) {
-        return from(post, false);
-    }
-
     public static PostResponse from(Post post, boolean liked) {
         return new PostResponse(
                 post.getId(),
